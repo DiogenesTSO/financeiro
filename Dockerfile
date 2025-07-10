@@ -1,6 +1,8 @@
 # Use uma imagem oficial do PHP com Apache
 FROM php:8.2-apache
 
+# --- INÍCIO DA MUDANÇA ---
+
 # Instale as dependências do sistema necessárias para o Laravel
 # e as extensões PHP mais comuns
 RUN apt-get update && apt-get install -y \
@@ -18,7 +20,10 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libicu-dev \
+    libpq-dev \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl pdo_pgsql
+
+# --- FIM DA MUDANÇA ---
 
 # Instale o Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -45,8 +50,6 @@ COPY . .
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# --- INÍCIO DAS MUDANÇAS ---
-
 # Copie o script de inicialização para o contêiner
 COPY start.sh /usr/local/bin/start.sh
 
@@ -55,5 +58,3 @@ RUN chmod +x /usr/local/bin/start.sh
 
 # Defina o script como o comando de inicialização padrão do contêiner
 CMD ["/usr/local/bin/start.sh"]
-
-# --- FIM DAS MUDANÇAS ---
