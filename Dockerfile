@@ -45,5 +45,15 @@ COPY . .
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Exponha a porta 80 (padrão do Apache)
-EXPOSE 80
+# --- INÍCIO DAS MUDANÇAS ---
+
+# Copie o script de inicialização para o contêiner
+COPY start.sh /usr/local/bin/start.sh
+
+# Torne o script executável
+RUN chmod +x /usr/local/bin/start.sh
+
+# Defina o script como o comando de inicialização padrão do contêiner
+CMD ["/usr/local/bin/start.sh"]
+
+# --- FIM DAS MUDANÇAS ---
