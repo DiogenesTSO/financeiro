@@ -1,10 +1,7 @@
 # Use uma imagem oficial do PHP com Apache
 FROM php:8.2-apache
 
-# --- INÍCIO DA MUDANÇA ---
-
-# Instale as dependências do sistema necessárias para o Laravel
-# e as extensões PHP mais comuns
+# Instale as dependências do sistema, incluindo Node.js e NPM
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -21,12 +18,14 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libicu-dev \
     libpq-dev \
+    nodejs \
+    npm \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl pdo_pgsql
-
-# --- FIM DA MUDANÇA ---
 
 # Instale o Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# ... (o resto do Dockerfile continua igual) ...
 
 # Configure o Apache para apontar para a pasta public do Laravel
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
