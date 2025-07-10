@@ -1,8 +1,6 @@
 # Use uma imagem oficial do PHP com Apache
 FROM php:8.2-apache
 
-# --- INÍCIO DA MUDANÇA ---
-
 # Instale as dependências do sistema necessárias para o Laravel
 # e as extensões PHP mais comuns
 RUN apt-get update && apt-get install -y \
@@ -22,8 +20,6 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
 
-# --- FIM DA MUDANÇA ---
-
 # Instale o Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -39,8 +35,12 @@ WORKDIR /var/www/html
 # Copie os arquivos de dependência primeiro para otimizar o cache do Docker
 COPY composer.json composer.lock ./
 
-# Instale as dependências do Composer
-RUN composer install --no-interaction --optimize-autoloader --no-dev
+# --- INÍCIO DA MUDANÇA ---
+
+# Instale as dependências do Composer SEM executar scripts
+RUN composer install --no-interaction --optimize-autoloader --no-dev --no-scripts
+
+# --- FIM DA MUDANÇA ---
 
 # Agora copie o resto dos arquivos da sua aplicação
 COPY . .
