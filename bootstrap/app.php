@@ -11,7 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->trustProxies(
+            at: '*' // Diz ao Laravel para confiar em todos os proxies
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
