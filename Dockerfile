@@ -31,8 +31,21 @@ RUN a2enmod rewrite
 # Defina o diretório de trabalho
 WORKDIR /var/www/html
 
-# Copie os arquivos da sua aplicação para o contêiner
+# --- INÍCIO DAS MUDANÇAS ---
+
+# Copie os arquivos de dependência primeiro para otimizar o cache do Docker
+COPY composer.json composer.lock ./
+
+# Instale as dependências do Composer
+# --no-interaction: Não faz perguntas interativas
+# --no-plugins e --no-scripts: Mais seguro para o build, mas pode ser removido se necessário
+# --prefer-dist: Baixa os pacotes como arquivos zip, mais rápido
+RUN composer install --no-interaction --optimize-autoloader --no-dev
+
+# Agora copie o resto dos arquivos da sua aplicação
 COPY . .
+
+# --- FIM DAS MUDANÇAS ---
 
 # Corrija as permissões para o Laravel
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
