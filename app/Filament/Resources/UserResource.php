@@ -3,10 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
-use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\Familia;
 use App\Models\User;
-use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -17,15 +15,14 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
-    protected static ?string $navigationGroup = 'Configurações';
-    protected static ?string $modelLabel = 'Usuário';
+    protected static ?string $navigationIcon   = 'heroicon-o-users';
+    protected static ?string $navigationGroup  = 'Configurações';
+    protected static ?string $modelLabel       = 'Usuário';
     protected static ?string $pluralModelLabel = 'Usuários';
 
     public static function form(Form $form): Form
@@ -104,5 +101,16 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('familia_id', filament()->auth()->user()->familia_id);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return filament()->auth()->user()->familia_id !== null;
     }
 }

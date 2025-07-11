@@ -9,4 +9,11 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateFamilia extends CreateRecord
 {
     protected static string $resource = FamiliaResource::class;
+
+    protected function afterCreate():void
+    {
+        auth()->user()->update([
+            'familia_id' => $this->record->id,
+        ]);
+    }
 }
