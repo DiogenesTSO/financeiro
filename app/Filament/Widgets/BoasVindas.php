@@ -22,19 +22,19 @@ class BoasVindas extends Widget
             return;
         }
 
-        $temContas = Conta::where('familia_id', $user->id)->exists();
+        $temContas = Conta::where('familia_id', $user->familia_id)->exists();
         if (!$temContas) {
             $this->etapa = 'conta';
             return;
         }
 
-        $temCategorias = Categoria::where('familia_id', $user->id)->exists();
+        $temCategorias = Categoria::where('familia_id', $user->familia_id)->exists();
         if (!$temCategorias) {
             $this->etapa = 'categorias';
             return;
         }
 
-        $temtransacao = Transacao::where('familia_id', $user->id)->exists();
+        $temtransacao = Transacao::where('familia_id', $user->familia_id)->exists();
         if (!$temtransacao) {
             $this->etapa = 'transacao';
             return;
