@@ -2,7 +2,6 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\ParcelaContaFutura;
 use App\Models\Transacao;
 use Filament\Widgets\ChartWidget;
 
@@ -25,6 +24,7 @@ class GraficoParcelas extends ChartWidget
 
             $receitas->push(
                 Transacao::where('tipo', 'receita')
+                    ->where('familia_id', filament()->auth()->user()->familia_id)
                     ->whereBetween('data', [$inicio, $fim])
                     ->sum('valor')
             );
@@ -32,6 +32,7 @@ class GraficoParcelas extends ChartWidget
             $despesas->push(
                 Transacao::where('is_paid', true)
                     ->where('tipo', 'despesa')
+                    ->where('familia_id', filament()->auth()->user()->familia_id)
                     ->whereBetween('data', [$inicio, $fim])
                     ->sum('valor')
             );
@@ -40,18 +41,18 @@ class GraficoParcelas extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Receitas',
-                    'data' => $receitas,
-                    'backgroundColor' => '#34d399', // verde
-                    'borderColor' => '#10b981',
-                    'fill' => false,
+                    'label'           => 'Receitas',
+                    'data'            => $receitas,
+                    'backgroundColor' => '#34d399',
+                    'borderColor'     => '#10b981',
+                    'fill'            => false,
                 ],
                 [
-                    'label' => 'Despesas',
-                    'data' => $despesas,
-                    'backgroundColor' => '#f87171', // vermelho
-                    'borderColor' => '#ef4444',
-                    'fill' => false,
+                    'label'           => 'Despesas',
+                    'data'            => $despesas,
+                    'backgroundColor' => '#f87171',
+                    'borderColor'     => '#ef4444',
+                    'fill'            => false,
                 ],
             ],
             'labels' => $meses,

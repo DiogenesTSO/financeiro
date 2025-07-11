@@ -20,6 +20,7 @@ class GraficoDespesas extends ChartWidget
             ->join('categorias', 'transacoes.categoria_id', '=', 'categorias.id')
             ->where('transacoes.tipo', 'despesa')
             ->where('transacoes.is_paid', true)
+            ->where('transacoes.familia_id', filament()->auth()->user()->familia_id)
             ->whereBetween('transacoes.data', [$inicioMes, $fimMes])
             ->groupBy('categorias.nome')
             ->pluck('total', 'categoria');
@@ -27,13 +28,13 @@ class GraficoDespesas extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Despesas',
-                    'data'  => $dados->values(),
+                    'label'           => 'Despesas',
+                    'data'            => $dados->values(),
                     'backgroundColor' => [
                         '#f87171', '#fb923c', '#facc15', '#4ade80', '#60a5fa',
                         '#a78bfa', '#f472b6', '#94a3b8', '#34d399', '#e879f9'
                     ],
-                    'borderWidth' => 2,
+                    'borderWidth'     => 2,
                 ],
             ],
             'labels' => $dados->keys(),
