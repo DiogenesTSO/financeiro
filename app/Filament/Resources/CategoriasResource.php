@@ -15,6 +15,8 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Builder;
 
 class CategoriasResource extends Resource
 {
@@ -60,7 +62,7 @@ class CategoriasResource extends Resource
                     ->formatStateUsing(fn (string $state): string => match($state) {
                         'receita'     => 'Receitas',
                         'despesa'     => 'Despesas',
-                        default     => $state,
+                        default       => $state,
                     }),
                 TextColumn::make('created_at')
                     ->label('Criada Em')
@@ -101,5 +103,16 @@ class CategoriasResource extends Resource
             'create' => Pages\CreateCategorias::route('/create'),
             'edit'   => Pages\EditCategorias::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): EloquentBuilder
+    {
+        return parent::getEloquentQuery()
+            ->where('familia_id', filament()->auth()->user()->familia_id);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return filament()->auth()->user()->familia_id !== null;
     }
 }

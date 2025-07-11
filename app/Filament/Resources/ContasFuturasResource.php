@@ -7,7 +7,6 @@ use App\Filament\Resources\ContasFuturasResource\RelationManagers\ParcelasContas
 use App\Models\Categoria;
 use App\Models\Conta;
 use App\Models\ContaFutura;
-use Closure;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
@@ -20,6 +19,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Builder;
 
 class ContasFuturasResource extends Resource
 {
@@ -238,5 +239,16 @@ class ContasFuturasResource extends Resource
             'create' => Pages\CreateContasFuturas::route('/create'),
             'edit' => Pages\EditContasFuturas::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): EloquentBuilder
+    {
+        return parent::getEloquentQuery()
+            ->where('familia_id', filament()->auth()->user()->familia_id);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return filament()->auth()->user()->familia_id !== null;
     }
 }
