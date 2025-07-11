@@ -10,12 +10,13 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 class FamiliaResource extends Resource
 {
-    protected static ?string $model = Familia::class;
+    protected static ?string $model           = Familia::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-home';
+    protected static ?string $navigationIcon  = 'heroicon-o-home';
     protected static ?string $navigationGroup = 'Configurações';
 
     public static function form(Form $form): Form
@@ -62,9 +63,15 @@ class FamiliaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListFamilias::route('/'),
+            'index'  => Pages\ListFamilias::route('/'),
             'create' => Pages\CreateFamilia::route('/create'),
-            'edit' => Pages\EditFamilia::route('/{record}/edit'),
+            'edit'   => Pages\EditFamilia::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): EloquentBuilder
+    {
+        return parent::getEloquentQuery()
+            ->where('id', filament()->auth()->user()->familia_id);
     }
 }

@@ -30,10 +30,10 @@ class TransacoesResource extends Resource
 {
     protected static ?string $model = Transacao::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
-    protected static ?string $navigationLabel = 'Transações';
+    protected static ?string $navigationIcon   = 'heroicon-o-currency-dollar';
+    protected static ?string $navigationLabel  = 'Transações';
     protected static ?string $pluralModelLabel = 'Transações';
-    protected static ?string $modelLabel = 'Transação';
+    protected static ?string $modelLabel       = 'Transação';
 
     protected static ?string $recordTitleAttribute = 'descricao';
 
@@ -136,7 +136,7 @@ class TransacoesResource extends Resource
                         'receita'     => 'Receitas',
                         'despesa'     => 'Despesas',
                         'transferir'  => 'Transferencias',
-                        default     => $state,
+                        default       => $state,
                     }),
                 IconColumn::make('is_paid')
                     ->label('Pago/Recebido')
@@ -228,9 +228,20 @@ class TransacoesResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTransacoes::route('/'),
+            'index'  => Pages\ListTransacoes::route('/'),
             'create' => Pages\CreateTransacoes::route('/create'),
-            'edit' => Pages\EditTransacoes::route('/{record}/edit'),
+            'edit'   => Pages\EditTransacoes::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('familia_id', filament()->auth()->user()->familia_id);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return filament()->auth()->user()->familia_id !== null;
     }
 }

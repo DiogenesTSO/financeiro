@@ -3,18 +3,13 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ContasResource\Pages;
-use App\Filament\Resources\ContasResource\RelationManagers;
 use App\Models\Conta;
-use App\Models\Contas;
-use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Tables;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -23,11 +18,10 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ContasResource extends Resource
 {
-    protected static ?string $model = Conta::class;
+    protected static ?string $model          = Conta::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-wallet';
 
@@ -46,12 +40,6 @@ class ContasResource extends Resource
                     ->inputMode('decimal')
                     ->default(0.00)
                     ->prefix('R$')
-                    // ->mask(fn (Mask $mask) => $mask
-                    //     ->numeric()
-                    //     ->decimalPlaces(2)
-                    //     ->thousandsSeparator('.')
-                    //     ->decimalSeparator(',')
-                    // )
                     ->label('Saldo da conta'),
                 Select::make('tipo')
                     ->label('Tipo da conta')
@@ -101,16 +89,11 @@ class ContasResource extends Resource
                     ->label('Saldo inicial')
                     ->alignCenter()
                     ->money('BRL'),
-                TextColumn::make('current_balance')
-                    ->label('Saldo Atual')
-                    ->alignCenter()
-                    ->money('BRL')
-                    ->color(fn (float $state): string => $state >= 0 ? 'success' : 'danger'),
                 TextColumn::make('created_at')
                     ->label('Criada Em')
                     ->alignCenter()
                     ->dateTime('d/m/Y H:i')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('updated_at')
                     ->label('Atualizada Em')
                     ->dateTime('d/m/Y H:i')
@@ -154,5 +137,16 @@ class ContasResource extends Resource
             'create' => Pages\CreateContas::route('/create'),
             'edit'   => Pages\EditContas::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('familia_id', filament()->auth()->user()->familia_id);
+    }
+
+    public static function canViewAny(): bool
+    {
+        return filament()->auth()->user()->familia_id !== null;
     }
 }
