@@ -46,7 +46,7 @@ class ContasFuturasResource extends Resource
                         Select::make('conta_id')
                             ->label('Conta')
                             ->options(
-                                Conta::where('familia_id', filament()->auth()->user()->id)
+                                Conta::where('familia_id', filament()->auth()->user()->familia_id)
                                     ->pluck('nome', 'id')
                             )
                             ->required()
@@ -54,7 +54,7 @@ class ContasFuturasResource extends Resource
                         Select::make('categoria_id')
                             ->label('Categoria')
                             ->options(
-                                Categoria::where('familia_id', filament()->auth()->user()->id)
+                                Categoria::where('familia_id', filament()->auth()->user()->familia_id)
                                     ->pluck('nome', 'id')
                             )
                             ->nullable()
