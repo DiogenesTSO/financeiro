@@ -115,7 +115,7 @@ class ParcelasServices
             $ids   = [];
 
             foreach ($chunk as $update) {
-                $cases[] = "WHEN id = {$update['id']} THEN '{$update['vencimento']}'";
+                $cases[] = "WHEN id = {$update['id']} THEN DATE '{$update['vencimento']}'";
                 $ids[]   = $update['id'];
             }
 
