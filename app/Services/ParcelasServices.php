@@ -98,7 +98,7 @@ class ParcelasServices
             $novaData  = $dataInicio->copy()->addMonths($parcela->qtd_parcelas - 1);
             $updates[] = [
                 'id'         => $parcela->id,
-                'vencimento' => $novaData,
+                'vencimento' => $novaData->toDateString(),
             ];
         }
 
