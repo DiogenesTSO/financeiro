@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Conta;
 use App\Models\ParcelaContaFutura;
 use App\Models\Transacao;
 use Carbon\Carbon;
@@ -15,10 +16,15 @@ class FinanceiroStats extends BaseWidget
         $inicioMes = Carbon::now()->startOfMonth();
         $fimMes    = Carbon::now()->endOfMonth();
 
-        $saldoAtual = Transacao::where('is_paid', true)
-            ->where('familia_id', filament()->auth()->user()->familia_id)
+        $familiaId = filament()->auth()->user()->familia_id;
+        $saldoInicial = Conta::where('familia_id', $familiaId)->sum('saldo_inicial');
+
+        $saldoTransacoes = Transacao::where('is_paid', true)
+            ->where('familia_id', $familiaId)
             ->selectRaw("SUM(CASE WHEN tipo = 'receita' THEN valor ELSE -valor END) as saldo")
             ->value('saldo');
+        
+        $saldoAtual = $saldoInicial + $saldoTransacoes;
 
         $despesasMes = Transacao::where('tipo', 'despesa')
             ->where('is_paid', true)
