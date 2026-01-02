@@ -14,6 +14,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\DeleteAction;
@@ -58,7 +59,18 @@ class TransacoesResource extends Resource
                             ->pluck('nome', 'id')
                     )
                     ->nullable()
-                    ->searchable(),
+                    ->searchable()
+                    ->reactive()
+                        ->afterStateUpdated(function ($state, Set $set) {
+                            if (!$state) {
+                                $set('tipo', null);
+                                return;
+                            }
+
+                            $categoria = Categoria::find($state);
+
+                            $set('tipo', $categoria?->tipo);
+                        }),
                 TextInput::make('descricao')
                     ->label('Descrição')
                     ->required()
@@ -76,6 +88,8 @@ class TransacoesResource extends Resource
                         'despesa'    => 'Despesa',
                         'transferir' => 'Transferência',
                     ])
+                    ->disabled()
+                    ->dehydrated()
                     ->required(),
                 DatePicker::make('data')
                     ->label('Data')
@@ -116,7 +130,7 @@ class TransacoesResource extends Resource
                     ->label('Valor')
                     ->alignCenter()
                     ->money('BRL')
-                    ->color(fn (string $state, $record): string => match ($record->type) {
+                    ->color(fn (string $state, $record): string => match ($record->tipo) {
                         'receita'    => 'success',
                         'despesa'    => 'danger',
                         'transferir' => 'info',
@@ -237,7 +251,8 @@ class TransacoesResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->where('familia_id', filament()->auth()->user()->familia_id);
+            ->where('familia_id', filament()->auth()->user()->familia_id)
+            ->orderByDesc('created_at');
     }
 
     public static function canViewAny(): bool

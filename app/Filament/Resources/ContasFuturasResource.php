@@ -15,6 +15,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -57,19 +58,30 @@ class ContasFuturasResource extends Resource
                                 Categoria::where('familia_id', filament()->auth()->user()->familia_id)
                                     ->pluck('nome', 'id')
                             )
-                            ->nullable()
+                            ->searchable()
                             ->reactive()
-                            ->searchable(),
+                            ->afterStateUpdated(function ($state, Set $set) {
+                                if (!$state) {
+                                    $set('tipo', null);
+                                    return;
+                                }
+
+                                $categoria = Categoria::find($state);
+
+                                $set('tipo', $categoria?->tipo);
+                            }),
                         TextInput::make('juros')
                             ->label('Taxa de juros (%)')
                             ->numeric()
-                            ->visible(fn (Get $get) => $get('categoria_id') && Categoria::find($get('categoria_id'))?->nome === 'Empréstimos'),
+                            ->visible(fn (Get $get) => $get('categoria_id') && Categoria::find($get('categoria_id'))?->nome === 'Emprestimo'),
                         Select::make('tipo')
                             ->label('Tipo')
                             ->options([
                                 'receita' => 'Receita',
                                 'despesa' => 'Despesa',
                             ])
+                            ->disabled()
+                            ->dehydrated()
                             ->required(),
                         Select::make('frequencia')
                             ->label('Frequência')
@@ -244,7 +256,8 @@ class ContasFuturasResource extends Resource
     public static function getEloquentQuery(): EloquentBuilder
     {
         return parent::getEloquentQuery()
-            ->where('familia_id', filament()->auth()->user()->familia_id);
+            ->where('familia_id', filament()->auth()->user()->familia_id)
+            ->orderByDesc('created_at');
     }
 
     public static function canViewAny(): bool

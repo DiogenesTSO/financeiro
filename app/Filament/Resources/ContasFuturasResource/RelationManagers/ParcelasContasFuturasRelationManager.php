@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ContasFuturasResource\RelationManagers;
 
 use App\Models\ParcelaContaFutura;
+use App\Models\Transacao;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -12,6 +13,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 
 class ParcelasContasFuturasRelationManager extends RelationManager
 {
@@ -56,10 +58,12 @@ class ParcelasContasFuturasRelationManager extends RelationManager
                     ->label('Pago'),
                 TextColumn::make('valor_pago')
                     ->label('Valor pago')
+                    ->placeholder('Não informado')
                     ->alignCenter()
                     ->money('BRL'),
                 TextColumn::make('pago_em')
                     ->date('d/m/Y')
+                    ->placeholder('Não informado')
                     ->alignCenter()
                     ->label('Pago em'),
             ])
@@ -71,21 +75,106 @@ class ParcelasContasFuturasRelationManager extends RelationManager
             ])
             ->actions([
                 Action::make('pagar')
+                    ->label('Pagar parcela')
+                    ->fillForm(fn (ParcelaContaFutura $record) => [
+                        'valor_pago' => (float) $record->valor,
+                        'pago_em'    => now(),
+                    ])
                     ->form([
                         DatePicker::make('pago_em')->required()->label('data do pagamento'),
-                        TextInput::make('valor_pago')->required()->label('Valor pago')->numeric(),
+                        TextInput::make('valor_pago')
+                            ->required()
+                            ->label('Valor pago')
+                            ->numeric()
+                            ->minValue(0.01),
                     ])
                     ->action(function (array $data, ParcelaContaFutura $record) {
-                        $record->update([
-                            'is_pad'     => true,
-                            'pago_em'    => $data['pago_em'],
-                            'valor_pago' => $data['valor_pago'],
-                        ]);
+                        DB::transaction(function () use ($data, $record) {
+                            $record->update([
+                                'is_pad'        => true,
+                                'pago_em'       => $data['pago_em'],
+                                'valor_pago'    => $data['valor_pago']
+                            ]);
 
-                    $this->recalcularParcelasRestantes($record);
+                            $contaFutura = $record->contaFutura;
+                            $conta       = $contaFutura->conta;
+
+                            Transacao::create([
+                                'familia_id'    => $contaFutura->familia_id,
+                                'conta_id'      => $conta->id,
+                                'categoria_id'  => $contaFutura->categoria_id,
+                                'descricao'     => $contaFutura->descricao . ' - Parcela ' . $record->qtd_parcelas,
+                                'valor'         => $data['valor_pago'],
+                                'tipo'          => $contaFutura->tipo,
+                                'data'          => $data['pago_em'],
+                                'is_paid'       => true,
+                                // 'conta_futura_id'   => $contaFutura->id,
+                                // 'parcela_id'        => $record->id,
+                            ]);
+
+                            if ($contaFutura->tipo === 'despesa') {
+                                $conta->decrement('saldo_atual', $data['valor_pago']);
+                            } else {
+                                $conta->increment('saldo_atual', $data['valor_pago']);
+                            }
+
+                            $this->recalcularParcelasRestantes($record);
+
+                            $todasPagas = $contaFutura->parcelas()
+                                ->where('is_pad', false)
+                                ->doesntExist();
+                            
+                            if ($todasPagas) {
+                                $contaFutura->update(['status' => 'concluido']);
+                            }
+                        });
+
+                    
                     })
-                ->requiresConfirmation()
-                ->visible(fn (ParcelaContaFutura $record) => !$record->is_pad),
+                    ->requiresConfirmation()
+                    ->visible(fn (ParcelaContaFutura $record) => !$record->is_pad),
+                Action::make('marcar_como_paga')
+                    ->label('Ja paga?')
+                    ->color('purple')
+                    ->icon('heroicon-o-check')
+                    ->fillForm(fn (ParcelaContaFutura $record) => [
+                        'valor_pago' => (float) $record->valor,
+                        'pago_em'    => now(),
+                    ])
+                    ->form([
+                        DatePicker::make('pago_em')
+                            ->required()
+                            ->label('Data do pagamento')
+                            ->default(now()),
+                        TextInput::make('valor_pago')
+                            ->required()
+                            ->label('Valor pago')
+                            ->numeric()
+                            ->minValue(0.01),
+                    ])
+                    ->action(function (array $data, ParcelaContafutura $record) {
+                        DB::transaction(function () use ($data, $record) {
+                            $record->update([
+                                'is_pad'        => true,
+                                'pago_em'       => $data['pago_em'],
+                                'valor_pago'    => $data['valor_pago']
+                            ]);
+
+                            $contaFutura = $record->contaFutura;
+
+                            $todasPagas = $contaFutura->parcelas()
+                                ->where('is_pad', false)
+                                ->doesntExist();
+
+                            if ($todasPagas) {
+                                $contaFutura->update(['status' => 'concluido']);
+                            }
+                        });
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Marcar parcela como paga')
+                    ->modalDescription('Esta ação NÃO criará transação nem alterará o saldo da conta.')
+                    ->visible(fn (ParcelaContaFutura $record) => !$record->is_pad),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
