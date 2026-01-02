@@ -15,6 +15,7 @@ class Transacao extends Model
         'familia_id',
         'conta_id',
         'categoria_id',
+        'conta_destino_id',
         'descricao',
         'valor',
         'tipo',

@@ -17,14 +17,7 @@ class FinanceiroStats extends BaseWidget
         $fimMes    = Carbon::now()->endOfMonth();
 
         $familiaId = filament()->auth()->user()->familia_id;
-        $saldoInicial = Conta::where('familia_id', $familiaId)->sum('saldo_inicial');
-
-        $saldoTransacoes = Transacao::where('is_paid', true)
-            ->where('familia_id', $familiaId)
-            ->selectRaw("SUM(CASE WHEN tipo = 'receita' THEN valor ELSE -valor END) as saldo")
-            ->value('saldo');
-        
-        $saldoAtual = $saldoInicial + $saldoTransacoes;
+        $contas = Conta::where('familia_id', $familiaId)->get();
 
         $despesasMes = Transacao::where('tipo', 'despesa')
             ->where('is_paid', true)
@@ -52,13 +45,23 @@ class FinanceiroStats extends BaseWidget
             })
             ->count();
 
-        return [
-            Stat::make('💰 Saldo Atual', 'R$ ' . number_format($saldoAtual, 2, ',', '.'))
-                ->description('Receitas - Despesas'),
+        $statsContas = $contas->map(function ($conta) {
+            return Stat::make(
+                "💰 {$conta->nome}",
+                    'R$ ' . number_format($conta->saldo_atual, 2, ',', '.')
+            )
+            ->description('Saldo atual da conta');
+        });
+        $statsGerais = [
             Stat::make('📉 Despesas do Mês', 'R$ ' . number_format($despesasMes, 2, ',', '.'))
                 ->description('Transações pagas no mês'),
             Stat::make('📅 Parcelas a vencer entre', 'R$ ' . number_format($parcelasAVencer, 2, ',', '.'))
                 ->description(now()->startOfMonth()->format('d/m/Y') . ' - ' . now()->endOfMonth()->format('d/m/Y') . " | Pagas {$parcelasPagas} de {$totalParcelas}")
         ];
+
+        return $statsContas
+            ->merge($statsGerais)
+            ->values()
+            ->all();
     }
 }
