@@ -16,8 +16,11 @@ return new class extends Migration
             $table->foreignId('familia_id')->constrained('familias')->onDelete('cascade');
             $table->string('nome');
             $table->decimal('saldo_inicial')->default(0.00);
+            $table->decimal('saldo_atual')->default(0.00);
             $table->string('tipo');
+            $table->decimal('limite_credito')->nullable(); // Limite do cartão de crédito se o tipo for = a cartão de crédito
             $table->text('descricao')->nullable();
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
     }

@@ -22,11 +22,11 @@ return new class extends Migration
             $table->decimal('valor_parcelas', 15, 2);
             $table->integer('qtd_parcelas');
             $table->integer('parcelas_pagas')->default(0);
-            $table->string('tipo'); // 'income', 'expense'
+            $table->string('tipo');
             $table->string('frequencia');
             $table->date('data_inicio');
             $table->date('data_fim')->nullable();
-            $table->string('status')->default('ativo'); // 'active', 'completed', 'cancelled'
+            $table->string('status')->default('ativo');
             $table->text('notas')->nullable();
             $table->timestamps();
         });
