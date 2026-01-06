@@ -32,7 +32,7 @@ class GraficoDespesas extends ChartWidget
                     'data'            => $dados->values(),
                     'backgroundColor' => [
                         '#f87171', '#fb923c', '#facc15', '#4ade80', '#60a5fa',
-                        '#a78bfa', '#f472b6', '#94a3b8', '#34d399', '#e879f9'
+                        '#a78bfa', '#f472b6', '#94a3b8', '#9ae600', '#e879f9'
                     ],
                     'borderWidth'     => 2,
                 ],

@@ -135,7 +135,7 @@ class ParcelasContasFuturasRelationManager extends RelationManager
                     ->visible(fn (ParcelaContaFutura $record) => !$record->is_pad),
                 Action::make('marcar_como_paga')
                     ->label('Ja paga?')
-                    ->color('purple')
+                    ->color('warning')
                     ->icon('heroicon-o-check')
                     ->fillForm(fn (ParcelaContaFutura $record) => [
                         'valor_pago' => (float) $record->valor,
