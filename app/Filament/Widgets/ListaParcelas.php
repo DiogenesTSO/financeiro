@@ -108,7 +108,7 @@ class ListaParcelas extends BaseWidget
                             'valor'         => $data['valor_pago'],
                             'tipo'          => $contaFutura->tipo,
                             'data'          => $data['pago_em'],
-                            'is_paid'       => true,
+                            'is_pad'       => true,
                         ]);
 
                         if ($contaFutura->tipo === 'despesa') {
@@ -118,7 +118,7 @@ class ListaParcelas extends BaseWidget
                         }
 
                         $todasPagas = $contaFutura->parcelas()
-                            ->where('is_paid', false)
+                            ->where('is_pad', false)
                             ->doesntExist();
 
                         if ($todasPagas) {
