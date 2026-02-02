@@ -6,7 +6,6 @@ use App\Models\ParcelaContaFutura;
 use App\Models\Transacao;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
-use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -63,8 +62,16 @@ class ListaParcelas extends BaseWidget
             TextColumn::make('qtd_parcelas')
                 ->label('Parcelas')
                 ->alignEnd()
-                ->formatStateUsing(fn ($state, $record) => 
-                    "{$state}/{$record->contaFutura->qtd_parcelas}"),
+                ->formatStateUsing(function ($state, $record) { 
+                    $pagas = $record->contaFutura
+                        ->parcelas()
+                        ->where('is_pad', true)
+                        ->count();
+
+                    $total = $record->contaFutura->qtd_parcelas;
+
+                    return "{$pagas}/{$total}";
+                }),
         ];
     }
 
